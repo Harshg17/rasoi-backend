@@ -4,7 +4,6 @@ const cors = require('cors');
 require('dotenv').config();
 const Course = require('./models/Course');
 const Contact = require('./models/Contact');
-
 const Enquiry = require('./models/Enquiry');
 
 const app = express();
@@ -21,7 +20,17 @@ mongoose.connect(process.env.MONGO_URI)
 // --- API ROUTES ---
 
 // POST Route: Receive an enquiry and save it to the database
-
+app.post('/api/enquiries', async (req, res) => {
+  try {
+    const newEnquiry = new Enquiry(req.body);
+    await newEnquiry.save();
+    console.log(`📩 New Course Enquiry from ${req.body.name}`);
+    res.status(201).json({ message: 'Enquiry saved successfully!' });
+  } catch (error) {
+    console.error('Error saving enquiry:', error);
+    res.status(500).json({ message: 'Failed to save enquiry.' });
+  }
+});
 
 // POST Route: Add a new course from the admin dashboard
 app.post('/api/courses', async (req, res) => {
@@ -69,6 +78,7 @@ app.delete('/api/courses/:id', async (req, res) => {
   }
 });
 
+// GET Route: Fetch all courses
 app.get('/api/courses', async (req, res) => {
   try {
     const courses = await Course.find({});
@@ -78,7 +88,7 @@ app.get('/api/courses', async (req, res) => {
   }
 });
 
-// 2. Get a single course by its ID (slug)
+// GET Route: Get a single course by its ID (slug)
 app.get('/api/courses/:id', async (req, res) => {
   try {
     const course = await Course.findOne({ id: req.params.id });
@@ -89,6 +99,7 @@ app.get('/api/courses/:id', async (req, res) => {
   }
 });
 
+// POST Route: Save a contact message
 app.post('/api/contact', async (req, res) => {
   try {
     const { name, email, message } = req.body;
@@ -102,10 +113,11 @@ app.post('/api/contact', async (req, res) => {
   } catch (error) {
     console.error('Error saving contact message:', error);
     res.status(500).json({ message: 'Failed to send message.' });
-  }});
+  }
+});
 
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
