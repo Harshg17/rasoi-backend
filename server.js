@@ -32,6 +32,17 @@ app.post('/api/enquiries', async (req, res) => {
   }
 });
 
+// GET Route: Fetch all enquiries so you can view them!
+app.get('/api/enquiries', async (req, res) => {
+  try {
+    // This fetches them all and sorts them by newest first
+    const enquiries = await Enquiry.find({}).sort({ createdAt: -1 });
+    res.status(200).json(enquiries);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching enquiries' });
+  }
+});
+
 // POST Route: Add a new course from the admin dashboard
 app.post('/api/courses', async (req, res) => {
   try {
