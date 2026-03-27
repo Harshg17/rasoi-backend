@@ -20,12 +20,18 @@ mongoose.connect(process.env.MONGO_URI)
 // --- API ROUTES ---
 
 // POST Route: Receive an enquiry and save it to the database
+// POST Route: Receive an enquiry and save it to the database
 app.post('/api/enquiries', async (req, res) => {
   try {
-    const newEnquiry = new Enquiry(req.body);
+    // 1. Pull out exactly the fields we expect from the frontend form
+    const { name, phone, courseTitle, tier, message } = req.body;
+    // 2. Create the new Enquiry using only those specific fields
+    const newEnquiry = new Enquiry({ name, phone, courseTitle, tier, message });
+    
     await newEnquiry.save();
-    console.log(`📩 New Course Enquiry from ${req.body.name}`);
-    res.status(201).json({ message: 'Enquiry saved successfully!' });
+    console.log(`📩 NEW COURSE ENQUIRY from ${name} for ${courseTitle} (${tier} tier)`);
+
+    res.status(201).json({ message: 'Enquiry saved successfully!', data: newEnquiry });
   } catch (error) {
     console.error('Error saving enquiry:', error);
     res.status(500).json({ message: 'Failed to save enquiry.' });
