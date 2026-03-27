@@ -58,7 +58,7 @@ app.post('/api/enquiries', async (req, res) => {
     await newEnquiry.save();
     console.log(`📩 NEW COURSE ENQUIRY from ${name} for ${courseTitle} (${tier} tier)`);
 
-    await sendNotificationEmail(
+    sendNotificationEmail(
       `🚨 New Course Enquiry: ${courseTitle}`,
       `You have a new enquiry for Rasoi Cooking Classes!\n\nName: ${name}\nPhone: ${phone}\nCourse: ${courseTitle}\nTier: ${tier}\nMessage: ${message || 'No message provided.'}`
     );
@@ -158,7 +158,7 @@ app.post('/api/contact', async (req, res) => {
 
     console.log(`📩 NEW CONTACT MESSAGE from ${name} (${email})`);
 
-    await sendNotificationEmail(
+    sendNotificationEmail(
       `✉️ New Contact Message from ${name}`,
       `Someone filled out the contact form on the website.\n\nName: ${name}\nEmail: ${email}\nMessage: ${message}`
     );
