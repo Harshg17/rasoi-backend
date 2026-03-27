@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const nodemailer = require('nodemailer');
 require('dotenv').config();
 const Course = require('./models/Course');
 const Contact = require('./models/Contact');
@@ -17,7 +18,33 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connected to MongoDB successfully'))
   .catch((err) => console.error('❌ MongoDB connection error:', err));
 
-// --- API ROUTES ---
+
+
+
+// --- NEW: Set up the Email Transporter ---
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER, // Your Gmail address
+    pass: process.env.EMAIL_PASS  // The 16-character App Password
+  }
+});
+
+// NEW: Helper function to send the email
+const sendNotificationEmail = async (subject, text) => {
+  try {
+    await transporter.sendMail({
+      from: `"Rasoi Website" <${process.env.EMAIL_USER}>`,
+      to: process.env.EMAIL_USER, // Sends the email to yourself
+      subject: subject,
+      text: text
+    });
+    console.log('📧 Email notification sent successfully!');
+  } catch (error) {
+    console.error('❌ Email notification failed:', error);
+  }
+};
+  // --- API ROUTES ---
 
 // POST Route: Receive an enquiry and save it to the database
 // POST Route: Receive an enquiry and save it to the database
@@ -30,6 +57,11 @@ app.post('/api/enquiries', async (req, res) => {
     
     await newEnquiry.save();
     console.log(`📩 NEW COURSE ENQUIRY from ${name} for ${courseTitle} (${tier} tier)`);
+
+    await sendNotificationEmail(
+      `🚨 New Course Enquiry: ${courseTitle}`,
+      `You have a new enquiry for Rasoi Cooking Classes!\n\nName: ${name}\nPhone: ${phone}\nCourse: ${courseTitle}\nTier: ${tier}\nMessage: ${message || 'No message provided.'}`
+    );
 
     res.status(201).json({ message: 'Enquiry saved successfully!', data: newEnquiry });
   } catch (error) {
@@ -125,6 +157,11 @@ app.post('/api/contact', async (req, res) => {
     await newMessage.save();
 
     console.log(`📩 NEW CONTACT MESSAGE from ${name} (${email})`);
+
+    await sendNotificationEmail(
+      `✉️ New Contact Message from ${name}`,
+      `Someone filled out the contact form on the website.\n\nName: ${name}\nEmail: ${email}\nMessage: ${message}`
+    );
 
     res.status(201).json({ message: 'Message sent successfully!', data: newMessage });
   } catch (error) {
